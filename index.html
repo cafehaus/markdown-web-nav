@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cafehaus</title>
+  <!-- Vue3 -->
+  <script src="https://unpkg.com/vue@3"></script>
+  <!-- Vue Router -->
+  <script src="https://unpkg.com/vue-router@4"></script>
+  <!-- element-ui 样式 -->
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <!-- element-ui 组件库 -->
+  <script src="https://unpkg.com/element-plus"></script>
+  <!-- element-ui 图标 -->
+  <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+</head>
+
+<body>
+  <div id="app">
+    <el-container class="layout">
+      <el-aside width="200px">
+        <el-scrollbar>
+          <el-menu router :default-active="defaultMenuActive">
+            <template v-for="(item, index) in menuList" :key="index">
+              <template v-if="!item.children || !item.children.length">
+                <el-menu-item :index="item.path" :route="item.path">
+                  <el-icon v-if="item.icon"><component :is="item.icon"></component></el-icon>
+                  <template #title>{{ item.title }}</template>
+                </el-menu-item>
+              </template>
+              <template v-else>
+                <el-sub-menu :index="index + ''">
+                  <template #title>
+                    <el-icon v-if="item.icon"><component :is="item.icon"></component></el-icon>{{ item.title }}
+                  </template>
+                  <el-menu-item-group>
+                    <template v-for="(itm, idx) in item.children" :key="idx">
+                      <el-menu-item :index="itm.path" :route="itm.path">
+                        <template #title>{{ itm.title }}</template>
+                      </el-menu-item>
+                    </template>
+                  </el-menu-item-group>
+                </el-sub-menu>
+              </template>
+            </template>
+          </el-menu>
+        </el-scrollbar>
+      </el-aside>
+
+      <el-container>
+        <el-header>
+          <span>用markdown制作网址导航</span>
+          <el-button type="text" @click="handleNavigate('https://github.com/cafehaus')">cafehaus</el-button>
+        </el-header>
+
+        <el-main>
+          <el-scrollbar>
+            <router-view></router-view>
+          </el-scrollbar>
+        </el-main>
+      </el-container>
+    </el-container>
+  </div>
+</body>
+</html>
+
+<script>
+  // 1. 创建 vue 实例
+  const app = Vue.createApp({
+    data() {
+      return {
+        menuList: [
+          { title: '首页', icon: 'home-filled', path: '/home' },
+          {
+            title: '使用教程',
+            icon: 'management',
+            path: 'readme'
+            // children: [
+            //   { title: '商品', path: '/goods' },
+            //   { title: '介绍', path: '/about' },
+            // ]
+          }
+        ],
+      }
+    },
+    computed: {
+      defaultMenuActive() {
+        const { meta, path } = this.$route
+        if (meta.activeMenu) {
+          return meta.activeMenu
+        }
+        return path
+      },
+    },
+    methods: {
+      handleNavigate(path) {
+        if (path.startsWith('http')) {
+          window.open(path)
+          return
+        }
+        this.$router.push({
+          path
+        })
+      },
+    }
+  })
+
+  // 2.1 创建自定义组件对象
+  const demoTreeData = [
+    {
+      "title": "✏️ 精选博客",
+      "children": [
+        {
+          "name": "咖啡教室",
+          "url": "https://cafe123.cn",
+          "description": "就想开间小小咖啡馆，做做咖啡调调酒",
+          "icon": "https://cafe123.cn/logo.svg"
+        },
+        {
+          "name": "人人都是码农",
+          "url": "https://node123.cn",
+          "description": "AI时代，零基础也能学会编程",
+          "icon": "https://node123.cn/images/logo.png"
+        }
+      ]
+    },
+    {
+      "title": "🧑‍💻 AI工具",
+      "children": [
+        {
+          "name": "DeepSeek",
+          "url": "https://chat.deepseek.com",
+          "description": "我是 DeepSeek，很高兴见到你！",
+          "icon": "https://chat.deepseek.com/favicon.svg"
+        }
+      ]
+    }
+  ]
+  const Home = {
+    template: `
+      <div>
+        <el-button type="primary" plain @click="handleAppend(1)">新增导航分类</el-button>
+        <el-button type="warning" plain @click="showUploadDialog = true">上传json网址数据文件</el-button>
+        <el-button type="info" text @click="downloadJsonTemplate">下载json示例模板</el-button>
+        <el-popover width="260">
+          <template #reference>
+            <el-button type="info" text>修改历史</el-button>
+          </template>
+          <div style="max-height: 200px;overflow-y: auto;">
+            <p
+              style="cursor: pointer;"
+              v-for="(item, index) in historyList"
+              :key="index"
+              @click="handlePickHistory(item)"
+            >
+              <span>修改时间：{{ formatDate(item.date) }}</span>
+            </p>
+            <p v-if="!historyList.length">暂无修改记录</p>
+          </div>
+        </el-popover>
+
+        <div style="margin: 20px 0;display: flex;">
+          <div style="background: #FFF;padding: 20px;flex: 1;">
+            <el-tree
+              :data="treeData"
+              :show-checkbox="false"
+              draggable
+              node-key="id"
+              default-expand-all
+              :expand-on-click-node="false"
+            >
+              <template #default="{ node, data }">
+                <div style="flex: 1;display: flex;justify-content: space-between;">
+                  <span>
+                    {{ node.label }}
+                    <el-icon
+                      style="margin-left: 8px;color: var(--el-color-primary);font-size: 12px;"
+                      @click="handleEdit(data)"
+                    >
+                      <edit-pen />
+                    </el-icon>
+                  </span>
+                  <span>
+                    <el-icon
+                      v-if="!node.isLeaf"
+                      style="color: var(--el-color-primary)"
+                      @click="handleAppend(3, data)"
+                    >
+                      <circle-plus/>
+                    </el-icon>
+                    <el-popconfirm
+                      confirm-button-text="确定"
+                      cancel-button-text="取消"
+                      icon="WarningFilled"
+                      icon-color="#E6A23C"
+                      title="确定要删除吗?"
+                      @confirm="remove(node, data)"
+                    >
+                      <template #reference>
+                        <el-icon style="margin-left: 8px;color: var(--el-color-danger)"><remove /></el-icon>
+                      </template>
+                    </el-popconfirm>
+                  </span>
+                </div>
+              </template>
+            </el-tree>
+          </div>
+
+          <el-card v-if="treeData && treeData.length" header="预览效果" style="width: 70%;margin-left: 20px;">
+            <template #header>
+              <div style="display: flex;justify-content: space-between;">
+                <span>预览效果</span>
+                <div>
+                  <el-button type="success" :disabled="!treeData || !treeData.length" @click="copyMarkdown">复制markdown数据</el-button>
+                  <el-button type="success" plain :disabled="!treeData || !treeData.length" @click="exportMarkdown">导出markdown</el-button>
+                  <el-button type="warning" plain :disabled="!treeData || !treeData.length" @click="exportJson">导出json</el-button>
+                </div>
+              </div>
+            </template>
+
+            <!-- 网址导航代码 -->
+            <template
+              v-for="(item, index) in treeData"
+              :key="index"
+            >
+              <h3>{{ item.title || '未设置导航分类标题' }}</h3>
+              <div style="display: flex;align-items: center;flex-wrap: wrap;margin-right: 20px;">
+                <a
+                  v-for="(itm, idx) in item.children"
+                  :key="idx"
+                  :href="itm.url"
+                  target="_blank"
+                  :title="itm.url"
+                  style="display: flex;align-items: center;margin: 0 20px 20px 0;padding: 20px;border-radius: 10px;border: 1px solid #EEE;width:250px;
+text-decoration: none;"
+                >
+                  <img v-if="itm.icon" :src="itm.icon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;margin-right:8px;" />
+                  <div v-else :style="'width:36px;height:36px;border-radius:50%;text-align: center;line-height:36px;margin-right:8px;background:' + generateColor() + ';color: #FFF;'">{{ itm.name ? itm.name[0] : '空' }}</div>
+                  <div style="overflow:hidden;">
+                    <div style="color: #333;white-space:nowrap;overflow:hidden;text-overflow: ellipsis;">{{ itm.name || '未设置网站名称' }}</div>
+                    <div style="font-size: 12px;color: #888;white-space:nowrap;overflow:hidden;text-overflow: ellipsis;">{{ itm.description || itm.url }}</div>
+                  </div>
+                </a>
+              </div>
+            </template>
+          </el-card>
+        </div>
+      </div>
+
+      <!-- 上传json文件弹窗 -->
+      <el-dialog
+        v-model="showUploadDialog"
+        title="上传json文件"
+        width="40%"
+        destroy-on-close
+      >
+        <div>
+          <input
+            type="file"
+            name="inputFile"
+            id="inputFile"
+            accept=".json"
+            style="background: #FFF;margin: 20px 0;border-color: #57bc78;"
+          />
+          <el-alert
+            title="注意：上传后会用json文件中的数据替换页面上已有的数据"
+            type="warning"
+            show-icon
+            :closable="false"
+          />
+        </div>
+
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="showUploadDialog = false">取消</el-button>
+            <el-button type="primary" @click="handleUploadJson">确认上传</el-button>
+          </span>
+        </template>
+      </el-dialog>
+
+      <!-- 新增编辑弹窗 -->
+      <el-dialog
+        v-model="showEditDialog"
+        :title="editDialogTitle"
+        width="40%"
+        @close="closeEditDialog"
+      >
+        <el-form
+          ref="form"
+          :model="form"
+          label-width="80px"
+        >
+          <el-form-item
+            v-if="editType < 3"
+            label="导航分类"
+            prop="title"
+            :rules="[
+              { required: true, message: '请输入分类标题' }
+            ]"
+          >
+            <el-input
+              v-model="form.title"
+              type="text"
+              clearable
+              placeholder="请输入分类标题"
+            />
+          </el-form-item>
+
+          <el-form-item v-if="editType === 1">
+            <el-alert title="新增分类时，分类下需添加至少一个网站信息" type="warning" show-icon :closable="false" />
+          </el-form-item>
+
+          <template v-if="editType !== 2">
+            <el-form-item
+              label="网站名称"
+              prop="name"
+              :rules="[
+                { required: true, message: '请输入网站名称' }
+              ]"
+            >
+              <el-input
+                v-model="form.name"
+                type="text"
+                clearable
+                placeholder="请输入网站名称"
+              />
+            </el-form-item>
+            <el-form-item
+              label="网站地址"
+              prop="url"
+              :rules="[
+                { required: true, message: '请输入网站url地址' },
+                { type: 'url', message: 'url地址格式错误，格式示例：https://cafe123.cn' }
+              ]"
+            >
+              <el-input
+                v-model="form.url"
+                type="text"
+                clearable
+                placeholder="url格式示例：https://cafe123.cn"
+              />
+            </el-form-item>
+            <el-form-item
+              label="网站图标"
+              prop="icon"
+              :rules="[
+                { type: 'url', message: '图标url地址格式错误，格式示例：https://cafe123.cn/logo.svg' }
+              ]"
+            >
+              <el-input
+                v-model="form.icon"
+                type="text"
+                clearable
+                placeholder="url格式示例：https://cafe123.cn/logo.svg"
+              />
+              <el-button v-if="false" type="primary" plain size="small" @click="handleAutoFavicon">自动获取图标地址</el-button>
+            </el-form-item>
+            <el-form-item
+              label="网站描述"
+              prop="description"
+            >
+              <el-input
+                v-model="form.description"
+                type="textarea"
+                clearable
+                placeholder="请输入网站描述"
+              />
+            </el-form-item>
+          </template>
+        </el-form>
+
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="closeEditDialog">取消</el-button>
+            <el-button type="primary" @click="submitForm">确认</el-button>
+          </span>
+        </template>
+      </el-dialog>
+    `,
+    props: {
+      name: {
+        type: String,
+        default: ''
+      }
+    },
+    data() {
+      return {
+        treeData: [],
+        treeDataBak: [
+          {
+            "id": 1,
+            "title": "✏️ 精选博客",
+            "label": "✏️ 精选博客",
+            "isLeaf": false,
+            "children": [
+              {
+                "id": 101,
+                "isLeaf": true,
+                "label": "咖啡教室",
+                "name": "咖啡教室",
+                "url": "https://cafe123.cn",
+                "description": "就想开间小小咖啡馆，做做咖啡调调酒",
+                "icon": "https://cafe123.cn/logo.svg"
+              },
+              {
+                "id": 102,
+                "isLeaf": true,
+                "label": "人人都是码农",
+                "name": "人人都是码农",
+                "url": "https://node123.cn",
+                "description": "AI时代，零基础也能学会编程",
+                "icon": "https://node123.cn/images/logo.png"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "isLeaf": false,
+            "title": "🧑‍💻 AI工具",
+            "label": "🧑‍💻 AI工具",
+            "children": [
+              {
+                "id": 201,
+                "isLeaf": true,
+                "label": "DeepSeek",
+                "name": "DeepSeek",
+                "url": "https://chat.deepseek.com",
+                "description": "我是 DeepSeek，很高兴见到你！",
+                "icon": "https://chat.deepseek.com/favicon.svg"
+              }
+            ]
+          }
+        ],
+        showUploadDialog: false,
+        showEditDialog: false,
+        form: {
+          title: '',
+          name: '',
+          url: '',
+          icon: '',
+          description: ''
+        },
+        editType: 1, // 1-新增分类 2-编辑分类 3-新增网站 4-编辑网站
+        curRow: {}, // 当前编辑数据
+        historyList: []
+      }
+    },
+    computed: {
+      defaultMenuActive() {
+        const { meta, path } = this.$route
+        if (meta.activeMenu) {
+          return meta.activeMenu
+        }
+        return path
+      },
+      editDialogTitle() {
+        const titleEnum = {
+          1: '新增导航分类',
+          2: '编辑导航分类',
+          3: '新增网站信息',
+          4: '编辑网站信息',
+        }
+
+        return titleEnum[this.editType]
+      }
+    },
+    created() {
+      this.init()
+    },
+    methods: {
+      init() {
+        this.treeData = demoTreeData.map(m => this.fmtJsonData(m))
+        this.historyList = this.getHistoryStorage()
+      },
+
+      // 设置修改记录缓存数据
+      setHistoryStorage() {
+        if (!this.treeData || !this.treeData.length || !Array.isArray(this.treeData)) {
+          return
+        }
+
+        const history = this.getHistoryStorage()
+        // 距上一条记录1分钟以上才缓存
+        if (history.length) {
+          const now = Date.now()
+          const preDate = history[0].date
+          if (now - preDate < (60 * 1000)) {
+            return
+          }
+        }
+
+        const current = {
+          date: Date.now(),
+          list: this.treeData
+        }
+        history.unshift(current)
+
+        try {
+          // 最多缓存100条修改记录
+          const storageList = history.length > 100 ? history.slice(0, 100) : history
+          localStorage.setItem('history', JSON.stringify(storageList))
+
+          // 更新当前页面上缓存数据
+          this.historyList = this.getHistoryStorage()
+        } catch (error) {
+          console.log('setHistoryStorage error:', error)
+        }
+      },
+      // 获取修改记录缓存数据
+      getHistoryStorage() {
+        let history = []
+        try {
+          const item = localStorage.getItem('history')
+          history = item ? JSON.parse(item) : []
+        } catch (error) {
+          console.log('getHistoryStorage error:', error)
+        }
+        return history
+      },
+
+      // 选择历史修改记录
+      handlePickHistory(item) {
+        this.$confirm(`确认使用 ${this.formatDate(item.date)} 的修改记录吗？确认后会替换页面上现有的数据，建议提前点击下方"导出json"按钮备份好数据后再操作`, '温馨提示', {
+          confirmButtonText: '确认使用',
+          cancelButtonText: '导出json',
+          distinguishCancelAndClose: true,
+        }).then(() => {
+          this.treeData = item.list || []
+        })
+        .catch((action) => {
+          if (action === 'cancel') {
+            this.exportJson()
+          }
+        })
+      },
+
+      // 编辑
+      handleEdit(data) {
+        this.curRow = data || {}
+        this.form = {
+          title: this.curRow.title || '',
+          name: this.curRow.name ||'',
+          url: this.curRow.url ||'',
+          icon: this.curRow.icon ||'',
+          description: this.curRow.description ||''
+        }
+        this.editType = this.curRow.isLeaf ? 4 : 2
+        this.showEditDialog = true
+      },
+      // 新增
+      handleAppend(type, data = {}) {
+        this.curRow = data
+        this.editType = type
+        this.showEditDialog = true
+      },
+      // 删除
+      remove(node, data) {
+        const parent = node.parent
+        const children = parent.data.children || parent.data
+        if (children.length < 2) {
+          this.$message({
+            type: 'warning',
+            message: '请至少保留一个元素'
+          })
+          return
+        }
+        const index = children.findIndex(d => d.id === data.id)
+        children.splice(index, 1)
+
+        // 删除的时候缓存下记录
+        this.setHistoryStorage()
+      },
+      // 关闭弹窗
+      closeEditDialog() {
+        this.form = {
+          title: '',
+          name: '',
+          url: '',
+          icon: '',
+          description: ''
+        }
+        this.$refs.form.resetFields()
+        this.showEditDialog = false
+      },
+      // 提交
+      submitForm() {
+        this.$refs.form.validate((valid) => {
+          if (valid) {
+            this.updateTreeNodeInfo(this.treeData, this.curRow.id, this.form)
+            this.treeData = [...this.treeData]
+            this.closeEditDialog()
+
+            // 新增编辑的时候缓存下记录
+            this.setHistoryStorage()
+          }
+        })
+      },
+      // 更新tree组件节点信息
+      updateTreeNodeInfo(array, id, newInfo) {
+        const f = newInfo
+
+        // 新增导航分类，直接添加到列表最后
+        if (!id && this.editType == 1) {
+          const obj = {
+            id: this.generateId(),
+            isLeaf: false,
+            title: f.title,
+            label: f.title,
+            children: [{
+              id: this.generateId(),
+              isLeaf: true,
+              label: f.name,
+              name: f.name,
+              url: f.url,
+              icon: f.icon,
+              description: f.description,
+            }]
+          }
+          this.treeData.push(obj)
+          return
+        }
+
+        for (let index = 0; index < array.length; index++) {
+          const element = array[index]
+          if (element.id === id) {
+            if (this.editType === 1) {
+              const obj = {
+                id: this.generateId(),
+                title: f.title,
+                label: f.title,
+              }
+              array[index].push(obj)
+            }
+
+            if (this.editType === 2) {
+              array[index].title = f.title
+              array[index].label = f.title
+            }
+
+            if (this.editType === 3) {
+              const obj = {
+                id: this.generateId(),
+                isLeaf: true,
+                label: f.name,
+                name: f.name,
+                url: f.url,
+                icon: f.icon,
+                description: f.description,
+              }
+              if (!array[index].children) {
+                array[index].children = []
+              }
+              array[index].children.push(obj)
+            }
+
+            if (this.editType === 4) {
+              array[index].label = f.name
+              array[index].name = f.name
+              array[index].url = f.url
+              array[index].icon = f.icon
+              array[index].description = f.description
+            }
+            break
+          }
+
+          // 继续往子级找
+          if (array[index].children) {
+            this.updateTreeNodeInfo(array[index].children, id, newInfo)
+          }
+        }
+      },
+
+      // 自动获取网站 favicon 图标
+      handleAutoFavicon() {
+        if (!this.form.url) {
+          this.$message({
+            type: 'error',
+            message: '请先输入网站url地址'
+          })
+          return
+        }
+        this.getFavicon(this.form.url).then(faviconUrl => {
+            if (faviconUrl) {
+              let wholeUrl = ''
+
+              // 解析url中的基础路径
+              const parsedUrl = new URL(this.form.url)
+              let baseUrl = parsedUrl.origin // 这将返回协议和主机名部分，即根路径
+
+              // 兼容本地 file 协议
+              if (faviconUrl.startsWith('file://')) {
+                wholeUrl = baseUrl + faviconUrl.replace('file://', '')
+              }
+              // 兼容直接项目跟路径
+              if (faviconUrl.startsWith('/')) {
+                wholeUrl = baseUrl + faviconUrl
+              }
+
+              this.form.icon = wholeUrl
+            }
+        })
+      },
+
+      // 上传json文件
+      handleUploadJson() {
+        const input = document.querySelector('#inputFile')
+        const files = input.files || []
+        const file = files[0]
+        if (!file) {
+            alert('请选择要上传的json网址数据文件')
+            return
+        }
+
+        // 读取文本
+        file.text().then(res => {
+          let list = []
+          try {
+            list = JSON.parse(res || '').root
+          } catch (error) {
+            console.log('json文件解析错误：', error)
+          }
+
+          this.treeData = list.map(m => this.fmtJsonData(m))
+          this.showUploadDialog = false
+        })
+      },
+      // 格式化json数据
+      fmtJsonData(info, isLeaf = false) {
+        info.id =  this.generateId()
+        info.label = info.title || info.name
+        // 自己存一个是否最外层标识
+        info.isLeaf = isLeaf
+        if (info.children && info.children.length) {
+          info.children = info.children.map(m => this.fmtJsonData(m, true))
+        }
+
+        return info
+      },
+
+      // 下载json模板
+      downloadJsonTemplate() {
+        const tempJson = {
+          "root": demoTreeData
+        }
+
+        this.downloadFile(JSON.stringify(tempJson, null, 2), 'web-nav-template.json')
+      },
+      // 复制markdown
+      copyMarkdown() {
+        const txt = this.generateMarkdown()
+        this.copyText(txt)
+      },
+      // 导出markdown
+      exportMarkdown() {
+        this.downloadFile(this.generateMarkdown(), 'web-nav.md')
+      },
+      // 生成markdown数据
+      generateMarkdown() {
+        let markdown = ''
+        for (let index = 0; index < this.treeData.length; index++) {
+          const element = this.treeData[index];
+          markdown +=`
+
+#### ${element.title || '未设置导航分类标题'}
+
+<div style="display: flex;align-items: center;flex-wrap: wrap;margin-right: 20px;">
+`
+          if (element.children) {
+            for (let j = 0; j < element.children.length; j++) {
+              const child = element.children[j]
+              markdown += 
+  `<a
+    href="${child.url}"
+    target="_blank"
+    title="${child.url}"
+    style="display: flex;align-items: center;margin: 0 20px 20px 0;padding: 20px;border-radius: 10px;border: 1px solid #EEE;width:250px;
+text-decoration: none;display:${child.url ? 'flex' : 'none'};"
+  >
+    <img src="${child.icon}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;margin-right:8px;display:${child.icon ? 'block' : 'none'};" />
+    <div style="width:36px;height:36px;border-radius:50%;text-align: center;line-height:36px;margin-right:8px;background:${this.generateColor()};color: #FFF;display:${child.icon ? 'none' : 'block'};">${child.name ? child.name[0] : '空'}</div>
+    <div style="overflow:hidden;">
+      <div style="color: #333;white-space:nowrap;overflow:hidden;text-overflow: ellipsis;">${child.name || '未设置网站名称'}</div>
+      <div style="font-size: 12px;color: #888;white-space:nowrap;overflow:hidden;text-overflow: ellipsis;">${child.description || child.url}</div>
+    </div>
+  </a>
+`
+            }
+          }
+
+          markdown += 
+`</div>`
+        }
+        return markdown
+      },
+
+      // 导出json
+      exportJson() {
+        const list = this.deleteJsonInvalidKey(this.treeData)
+        const json = {
+          root: list
+        }
+
+        this.downloadFile(JSON.stringify(json, null, 2), 'web-nav.json')
+      },
+      // 删除json数据中的无效key
+      deleteJsonInvalidKey(array) {
+        if (!array || !array.length) return
+
+        const result = []
+        const validKeys = ['title', 'name', 'url', 'icon', 'description']
+
+        for (let index = 0; index < array.length; index++) {
+          const element = array[index]
+          const keys = Object.keys(element)
+          console.log(keys);
+          
+          const info = {}
+          keys.map(k => {
+            if (validKeys.includes(k)) {
+              info[k] = element[k]
+            }
+          })
+          if (element.children) {
+            info.children = this.deleteJsonInvalidKey(element.children)
+          }
+
+          result.push(info)
+        }
+        console.log(result);
+        
+
+        return result
+      },
+
+      // 下载文件
+      downloadFile(txt, fileName) {
+        if (!txt) return
+        const blob = new Blob([txt], { type: 'plain/text' })
+        const href = URL.createObjectURL(blob)
+
+        const element = document.createElement('a')
+        element.setAttribute('href', href)
+        element.setAttribute('download', fileName)
+        document.body.appendChild(element)
+        element.click()
+        document.body.removeChild(element)
+      },
+      // 复制内容到粘贴板
+      copyText(text) {
+        if (!text) return
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text)
+        } else {
+            let textarea = document.createElement('textarea')
+            document.body.appendChild(textarea)
+            textarea.style.position = 'fixed'
+            textarea.style.clip = 'rect(0 0 0 0)'
+            textarea.style.top = '10px'
+            textarea.value = text
+            textarea.select()
+            document.execCommand('copy', true)
+            document.body.removeChild(textarea)
+        }
+        this.$message({
+          type: 'success',
+          message: '复制成功'
+        })
+      },
+      // 生成唯一id
+      generateId() {
+        return Date.now() + '' + Math.random().toString(36).substr(2, 9)
+      },
+      // 获取网站 favicon 图标
+      async getFavicon(url) {
+        try {
+          // 发送请求获取HTML内容
+          const response = await fetch(url)
+          const html = await response.text()
+  
+          // 创建一个DOM解析器
+          const parser = new DOMParser()
+          const doc = parser.parseFromString(html, 'text/html')
+  
+          // 查找link标签中type为"image/x-icon"的元素
+          const links = doc.querySelectorAll('link[rel="shortcut icon"], link[rel="icon"]')
+          if (links.length > 0) {
+            const faviconUrl = links[0].href
+            return faviconUrl
+          } else {
+            return null // 没有找到favicon
+          }
+        } catch (error) {
+          // console.error('Error fetching or parsing the page:', error)
+          this.$message({
+            type: 'error',
+            message: '因目标网站跨域等限制，无法自动获取到网站图标地址，请手动填写'
+          })
+          return null
+        }
+      },
+      // 生成小清新随机颜色
+      generateColor() {
+        function hslToRgb(h, s, l) {
+          s /= 100
+          l /= 100
+          const c = (1 - Math.abs(2 * l - 1)) * s
+          const x = c * (1 - Math.abs((h / 60) % 2 - 1))
+          const m = l - c / 2
+          let r, g, b
+
+          if (h < 60) [r, g, b] = [c, x, 0];
+          else if (h < 120) [r, g, b] = [x, c, 0];
+          else if (h < 180) [r, g, b] = [0, c, x];
+          else if (h < 240) [r, g, b] = [0, x, c];
+          else if (h < 300) [r, g, b] = [x, 0, c];
+          else [r, g, b] = [c, 0, x];
+
+          return [
+            Math.round((r + m) * 255),
+            Math.round((g + m) * 255),
+            Math.round((b + m) * 255)
+          ]
+        }
+        
+        const h = Math.floor(Math.random() * 360) // 随机色相
+        const s = Math.floor(Math.random() * 20 + 20) // 饱和度 20-40%
+        const l = Math.floor(Math.random() * 10 + 85) // 亮度 85-95%
+        const [r, g, b] = hslToRgb(h, s, l);
+        
+        return `#${[r, g, b].map(v => 
+          v.toString(16).padStart(2, '0')
+        ).join('')}`
+      },
+      // 格式化时间
+      formatDate(timestamp) {
+        if (!timestamp) return
+
+        const date = new Date(timestamp)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        const seconds = String(date.getSeconds()).padStart(2, '0')
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+      },
+    }
+  }
+
+  const Readme = {
+    template: `
+      <div>
+        Readme
+      </div>
+    `,
+  }
+  // 2.2 生成路由表
+  const routes = [
+    { path: '/', redirect: '/home' },
+    { path: '/home', component: Home },
+    { path: '/readme', component: Readme },
+  ]
+  // 2.3 创建 router 实例
+  const router = VueRouter.createRouter({
+    history: VueRouter.createWebHashHistory(),
+    routes,
+  })
+  // 2.4 全局注册自定义组件
+  app.component('home', Home)
+  app.component('readme', Readme)
+  // 2.5 使用 vue-router
+  app.use(router)
+
+  // 3.1 使用 element-ui 组件
+  app.use(ElementPlus)
+  // 3.2 注册 element-ui 中的图标组件
+  for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+    app.component(key, component)
+  }
+
+  // 4. 将 vue 应用实例挂载到页面节点上
+  app.mount('#app')
+</script>
+
+<style>
+body,
+div {
+  padding: 0;
+  margin: 0;
+}
+
+.layout {
+  height: 100vh;
+  background: #F5F7F7;
+}
+
+.layout .el-aside .el-scrollbar,
+.layout .el-aside .el-scrollbar__view,
+.layout .el-menu {
+  height: 100%;
+}
+
+.layout .el-header {
+  background: #FFF;
+  border-bottom: 1px solid #EEE;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+</style>
