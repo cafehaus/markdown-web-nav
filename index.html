@@ -144,7 +144,7 @@
         <el-button type="primary" plain @click="handleAppend(1)">新增导航分类</el-button>
         <el-button type="warning" plain @click="showUploadDialog = true">上传json网址数据文件</el-button>
         <el-button type="info" text @click="downloadJsonTemplate">下载json示例模板</el-button>
-        <el-popover width="260">
+        <el-popover width="260" v-if="historyList.length">
           <template #reference>
             <el-button type="info" text>修改历史</el-button>
           </template>
@@ -157,7 +157,6 @@
             >
               <span>修改时间：{{ formatDate(item.date) }}</span>
             </p>
-            <p v-if="!historyList.length">暂无修改记录</p>
           </div>
         </el-popover>
 
@@ -482,11 +481,11 @@ text-decoration: none;"
         }
 
         const history = this.getHistoryStorage()
-        // 距上一条记录1分钟以上才缓存
+        // 距上一条记录10秒以上才缓存
         if (history.length) {
           const now = Date.now()
           const preDate = history[0].date
-          if (now - preDate < (60 * 1000)) {
+          if (now - preDate < (10 * 1000)) {
             return
           }
         }
@@ -950,11 +949,42 @@ text-decoration: none;display:${child.url ? 'flex' : 'none'};"
   }
 
   const Readme = {
-    template: `
-      <div>
-        Readme
-      </div>
-    `,
+    template: `<div style="background:#FFF;padding:40px 80px;line-height: 2;">
+      <h3>使用教程</h3>
+      <p>理想的方式应该只用关心网址相关的数据就行了，相同的模板化代码自动生成最好，于是就想到了由网址导航的 json 数据直接给生成 markdown 内容出来。如果你不懂代码或者不知道如何修改json数据也没关系，可以直接在网页上使用，总共分为如下 4 个步骤：</p>
+
+      <h4>1、打开 markdown-web-nav 网页工具</h4>
+      <p>在浏览器中打开 https://cafehaus.github.io/markdown-web-nav，网站内容区左侧为级联网址数据管理区，可以在这里编辑新增、编辑、删除需要的网址数据。</p>
+
+      <p>右侧为效果预览区，当我们修改了网址数据后，可以在这里实时查看到用markdown渲染出来一样的最新的效果。</p>
+
+      <img src="./1.png" style="width:80%;" />
+
+      <h4>2、新增网址导航数据</h4>
+      <p>进入网页后默认有几个示例数据，可以直接在示例的基础上修改、新增就行了。点击顶部的“新增导航分类”可以新增一个分类，然后可以在分类下再新增我们需要的网址导航数据。</p>
+
+      <p>点击分类和网站数据后面的编辑图标可以编辑详细信息，点击分类和网站数据后面的减号图标可以删除当前元素，点击分类右侧的加号图标可以新增当前类目下的网站信息。</p>
+
+      <p>同时也可以点击顶部的“上传json网址数据文件”按钮，直接将json数据加载到页面上，不过需注意json数据需按特定格式编写，也可以点击“下载json示例模板”参照模板编写：</p>
+
+      <p>如果想要恢复到历史某个版本进行修改，可以鼠标放到顶部的“修改历史”按钮上，里面会记录我们最近的修改历史，点击某个修改时间可以加载对应时间点的修改数据，不过操作前建议先点“导出json”按钮将当前的数据备份到自己电脑本地。</p>
+
+      <img src="./2.png" style="width:80%;" />
+
+      <h5>如何找到网站 icon 图标的链接？</h5>
+
+      <p>新增网站信息时网站名称和网站地址必填，为了美观建议填上网址图标地址，不过很多人可能不知道如何找到网站 icon 图标的链接，大多网站就是在域名后面跟上如下一些后缀：1️⃣ /favicon.ico 2️⃣ /logo.png 3️⃣ /logo.svg 4️⃣ /images/logo.png<p>
+
+      <p>可以自己在浏览器中网址后面加上上面的后缀看能不能正常打开图片，如果打开失败也可以鼠标右键-检查（快捷键F12），打开浏览器调试台，然后选到network后刷新一下浏览器，从加载的资源中也可以找到我们需要的图标地址。<p>
+
+      <img src="./3.png" style="width:80%;" />
+
+      <h4>3、复制markdown数据</h4>
+      <p>网址导航数据添加完成后，可以点击右侧的“复制markdown数据”，直接将最终的markdown数据复制到粘贴板上。同时如果每次修改比较多时也建议点击“导出json“按钮备份一下，可将当前数据导出为一个json文件保存在自己电脑上，下次想再次修改时可以直接通过“上传json网址数据文件”加载回来所有数据。<p>
+
+      <h4>4、粘贴到支持markdown内容渲染的文档页面中</h4>
+      <p>上一步复制好markdown数据后，我们就可以在支持markdown渲染的文档中粘贴进去就可以了。就过想自己本地修改markdown数据，也可以直接选择“导出markdown”下载到本地进行修改。<p>
+    </div>`,
   }
   // 2.2 生成路由表
   const routes = [
