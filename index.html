@@ -52,7 +52,7 @@
       <el-container>
         <el-header>
           <span>用markdown制作网址导航</span>
-          <el-button type="text" @click="handleNavigate('https://github.com/cafehaus')">cafehaus</el-button>
+          <el-button type="text" @click="handleNavigate('https://github.com/cafehaus/markdown-web-nav/issues')">问题反馈</el-button>
         </el-header>
 
         <el-main>
@@ -470,7 +470,7 @@ text-decoration: none;"
     },
     methods: {
       init() {
-        this.treeData = demoTreeData.map(m => this.fmtJsonData(m))
+        this.treeData = (JSON.parse(JSON.stringify(demoTreeData))).map(m => this.fmtJsonData(m))
         this.historyList = this.getHistoryStorage()
       },
 
