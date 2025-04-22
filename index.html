@@ -76,7 +76,7 @@
           {
             title: '使用教程',
             icon: 'management',
-            path: 'readme'
+            path: '/readme'
             // children: [
             //   { title: '商品', path: '/goods' },
             //   { title: '介绍', path: '/about' },
@@ -133,7 +133,7 @@
           "name": "DeepSeek",
           "url": "https://chat.deepseek.com",
           "description": "我是 DeepSeek，很高兴见到你！",
-          "icon": "https://chat.deepseek.com/favicon.svg"
+          "icon": "https://www.deepseek.com/favicon.ico"
         }
       ]
     }
@@ -159,6 +159,7 @@
             </p>
           </div>
         </el-popover>
+        <el-button type="info" text @click="reset">重置成示例数据</el-button>
 
         <div style="margin: 20px 0;display: flex;">
           <div style="background: #FFF;padding: 20px;flex: 1;">
@@ -427,7 +428,7 @@ text-decoration: none;"
                 "name": "DeepSeek",
                 "url": "https://chat.deepseek.com",
                 "description": "我是 DeepSeek，很高兴见到你！",
-                "icon": "https://chat.deepseek.com/favicon.svg"
+                "icon": "https://www.deepseek.com/favicon.ico"
               }
             ]
           }
@@ -470,8 +471,17 @@ text-decoration: none;"
     },
     methods: {
       init() {
-        this.treeData = (JSON.parse(JSON.stringify(demoTreeData))).map(m => this.fmtJsonData(m))
         this.historyList = this.getHistoryStorage()
+        if (this.historyList.length) {
+          this.treeData = this.historyList[0].list || []
+        } else {
+          this.reset()
+        }
+      },
+
+      // 重置成示例数据
+      reset() {
+        this.treeData = (JSON.parse(JSON.stringify(demoTreeData))).map(m => this.fmtJsonData(m))
       },
 
       // 设置修改记录缓存数据
@@ -961,7 +971,7 @@ text-decoration: none;display:${child.url ? 'flex' : 'none'};"
 
 <h4>1、打开 markdown-web-nav 网页工具</h4>
 
-<p>在浏览器中打开：https://cafehaus.github.io/markdown-web-nav</p>
+<p>在浏览器中打开：<a href="https://cafehaus.github.io/markdown-web-nav" target="blank">markdown-web-nav</a></p>
 
 <p>网站内容区左侧为级联网址数据管理区，可以在这里新增、编辑、删除需要的网址数据。右侧为效果预览区，当我们修改了网址数据后，可以在这里实时查看到用markdown渲染出来一样的最终效果。</p>
 
@@ -1033,7 +1043,7 @@ text-decoration: none;display:${child.url ? 'flex' : 'none'};"
 
 <h4>3、如何反馈问题？</h4>
 
-<p>有任何使用问题或建议可以在 github 对应仓库提 issue：https://github.com/cafehaus/markdown-web-nav/issues</p>
+<p>有任何使用问题或建议可以在 github 对应仓库提 <a href="https://github.com/cafehaus/markdown-web-nav/issues" target="blank">issue</a></p>
     </div>`,
   }
   // 2.2 生成路由表

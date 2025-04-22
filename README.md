@@ -14,7 +14,7 @@
 制作出一个网址导航页面总共分为如下6个步骤，操作也很简单：
 
 #### 1、打开 markdown-web-nav 网页工具
-在浏览器中打开：https://cafehaus.github.io/markdown-web-nav
+在浏览器中打开：[markdown-web-nav](https://cafehaus.github.io/markdown-web-nav)
 
 网站内容区左侧为级联网址数据管理区，可以在这里新增、编辑、删除需要的网址数据。右侧为效果预览区，当我们修改了网址数据后，可以在这里实时查看到用markdown渲染出来一样的最终效果。
 
@@ -48,7 +48,7 @@
           "name": "DeepSeek",
           "url": "https://chat.deepseek.com",
           "description": "我是 DeepSeek，很高兴见到你！",
-          "icon": "https://chat.deepseek.com/favicon.svg"
+          "icon": "https://www.deepseek.com/favicon.ico"
         }
       ]
     }
@@ -84,7 +84,7 @@
 
 ### 常见问题
 #### 1、如何还原之前的数据？
-制作好网址导航后，如果过了一段时间想要再次新增时，直接打开网站工具 https://cafehaus.github.io/markdown-web-nav 后如何能加载回来之前的数据？
+制作好网址导航后，如果过了一段时间想要再次新增时，直接打开网站工具 [markdown-web-nav](https://cafehaus.github.io/markdown-web-nav) 后如何能加载回来之前的数据？
 
 有两种方式：第一种通过事先下载好之前的json备份文件，再通过“上传json网址数据文件”可以加载回之前的数据。
 
@@ -110,4 +110,4 @@
 <img src="./static/8.png" />
 
 #### 3、如何反馈问题？
-有任何使用问题或建议可以在 github 对应仓库提 issue：https://github.com/cafehaus/markdown-web-nav/issues
+有任何使用问题或建议可以在 github 对应仓库提 [issue](https://github.com/cafehaus/markdown-web-nav/issues)
