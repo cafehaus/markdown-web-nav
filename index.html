@@ -746,6 +746,7 @@ text-decoration: none;"
 
             this.treeData = list.map(m => this.fmtJsonData(m))
             this.showUploadDialog = false
+            return
           }
 
           this.$message.error('请选择要上传的json文件或者输入json文本数据')
@@ -804,7 +805,7 @@ text-decoration: none;"
           markdown +=`
 
 #### ${element.title || '未设置导航分类标题'}
-
+---
 <div style="display: flex;align-items: center;flex-wrap: wrap;margin-right: 20px;">`
           if (element.children) {
             for (let j = 0; j < element.children.length; j++) {
