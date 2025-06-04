@@ -249,17 +249,17 @@ text-decoration: none;"
         </div>
       </div>
 
-      <!-- 上传json文件弹窗 -->
+      <!-- 上传json数据弹窗 -->
       <el-dialog
         v-model="showUploadDialog"
-        title="上传json文件"
+        title="上传json数据"
         width="40%"
         destroy-on-close
       >
         <div>
           <el-alert
             title="方式一：上传json文件"
-            type="info"
+            type="warning"
             show-icon
             :closable="false"
           />
@@ -272,7 +272,7 @@ text-decoration: none;"
           />
           <el-alert
             title="方式二：粘贴json文本内容"
-            type="info"
+            type="warning"
             show-icon
             :closable="false"
             style="margin: 20px 0 10px"
