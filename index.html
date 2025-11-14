@@ -20,7 +20,7 @@
 <body>
   <div id="app">
     <el-container class="layout">
-      <el-aside width="200px">
+      <!-- <el-aside width="200px">
         <el-scrollbar>
           <el-menu router :default-active="defaultMenuActive">
             <template v-for="(item, index) in menuList" :key="index">
@@ -47,12 +47,29 @@
             </template>
           </el-menu>
         </el-scrollbar>
-      </el-aside>
+      </el-aside> -->
 
       <el-container>
         <el-header>
-          <span>用markdown制作网址导航</span>
-          <el-button type="text" @click="handleNavigate('https://github.com/cafehaus/markdown-web-nav/issues')">问题反馈</el-button>
+          <span style="cursor: pointer;font-size: 15px;color: #999;" @click="handleNavigate('/')">🌍 用 Markdown 语法在文档类平台页面中制作网址导航</span>
+          <div style="display: flex;align-items: center;color: #999;">
+            <span style="display: flex;align-items: center;margin-left:20px;">
+              <el-icon><notebook /></el-icon>
+              <el-button
+                type="text"
+                style="color: #999;font-weight: normal;margin-left: 4px;"
+                @click="handleNavigate('/readme')"
+              >使用教程</el-button>
+            </span>
+            <span style="display: flex;align-items: center;margin-left: 20px;">
+              <el-icon><chat-dot-round /></el-icon>
+              <el-button
+                type="text"
+                style="color: #999;font-weight: normal;margin-left: 4px;"
+                @click="handleNavigate('https://github.com/cafehaus/markdown-web-nav/issues')"
+              >问题反馈</el-button>
+            </span>
+            </div>
         </el-header>
 
         <el-main>
@@ -175,20 +192,44 @@
                 <div style="flex: 1;display: flex;justify-content: space-between;">
                   <span>
                     {{ node.label }}
-                    <el-icon
-                      style="margin-left: 8px;color: var(--el-color-primary);font-size: 12px;"
-                      @click="handleEdit(data)"
-                    >
-                      <edit-pen />
-                    </el-icon>
                   </span>
                   <span>
                     <el-icon
                       v-if="!node.isLeaf"
-                      style="color: var(--el-color-primary)"
+                      style="margin-left: 8px;color: var(--el-color-info-light-5)"
+                      @click="handleCopy(1, node, data)"
+                    >
+                      <copy-document/>
+                    </el-icon>
+                    <el-icon
+                      v-if="!node.isLeaf"
+                      style="margin-left: 8px;color: var(--el-color-primary);"
+                      @click="handleEdit(data)"
+                    >
+                      <edit-pen />
+                    </el-icon>
+                    <el-icon
+                      v-if="!node.isLeaf"
+                      style="margin-left: 8px;color: var(--el-color-primary)"
                       @click="handleAppend(3, data)"
                     >
-                      <circle-plus/>
+                      <circle-plus/> 
+                    </el-icon>
+
+                    <el-icon
+                      v-if="node.isLeaf"
+                      style="margin-left: 8px;color: var(--el-color-info-light-5)"
+                      title="复制"
+                      @click="handleCopy(2, node, data)"
+                    >
+                      <copy-document/>
+                    </el-icon>
+                    <el-icon
+                      v-if="node.isLeaf"
+                      style="margin-left: 8px;color: var(--el-color-primary);"
+                      @click="handleEdit(data)"
+                    >
+                      <edit-pen />
                     </el-icon>
                     <el-popconfirm
                       confirm-button-text="确定"
@@ -595,6 +636,89 @@ text-decoration: none;"
 
         // 删除的时候缓存下记录
         this.setHistoryStorage()
+      },
+      // 查找父节点
+      findParentNode(treeData, childId) {
+        for (let i = 0; i < treeData.length; i++) {
+          const node = treeData[i]
+          if (node.children && node.children.length) {
+            // 检查当前节点的子节点中是否包含目标子节点
+            const hasChild = node.children.some(child => child.id === childId)
+            if (hasChild) {
+              return node
+            }
+            // 递归查找子节点
+            const found = this.findParentNode(node.children, childId)
+            if (found) {
+              return found
+            }
+          }
+        }
+        return null
+      },
+      
+      // 复制
+      handleCopy(type, node, data) {
+        // type 1-复制分类 2-复制网址
+         if (type === 1) {
+           // 复制分类（父节点）
+           const copiedCategory = JSON.parse(JSON.stringify(data))
+           // 生成新的ID
+           copiedCategory.id = this.generateId()
+           // 在title后面添加_copy后缀
+           copiedCategory.title = (copiedCategory.title || '') + '_copy'
+           copiedCategory.label = copiedCategory.title
+           // 更新子元素的ID
+           if (copiedCategory.children && copiedCategory.children.length) {
+             copiedCategory.children = copiedCategory.children.map(child => ({
+               ...child,
+               id: this.generateId()
+             }))
+           }
+           
+           // 找到当前分类在treeData中的位置
+           const currentIndex = this.treeData.findIndex(item => item.id === data.id)
+           if (currentIndex !== -1) {
+             // 在当前分类后面插入复制的分类
+             this.treeData.splice(currentIndex + 1, 0, copiedCategory)
+           }
+           
+          //  this.$message({
+          //    type: 'success',
+          //    message: '分类复制成功'
+          //  })
+         } else if (type === 2) {
+           // 复制网址（子节点）
+           const copiedWebsite = {
+             ...data,
+             id: this.generateId()
+           }
+           // 在name后面添加_copy后缀
+           copiedWebsite.name = (copiedWebsite.name || '') + '_copy'
+           copiedWebsite.label = copiedWebsite.name
+           
+           // 找到父节点
+           const parentNode = this.findParentNode(this.treeData, data.id)
+           if (parentNode && parentNode.children) {
+             // 找到当前网站在父节点children中的位置
+             const currentIndex = parentNode.children.findIndex(item => item.id === data.id)
+             if (currentIndex !== -1) {
+               // 在当前网站后面插入复制的网站
+               parentNode.children.splice(currentIndex + 1, 0, copiedWebsite)
+             }
+           }
+           
+          //  this.$message({
+          //    type: 'success',
+          //    message: '网站复制成功'
+          //  })
+         }
+         
+         // 更新treeData触发视图更新
+         this.treeData = [...this.treeData]
+         
+         // 复制的时候缓存下记录
+         this.setHistoryStorage()
       },
       // 关闭弹窗
       closeEditDialog() {
@@ -1132,5 +1256,13 @@ div {
   align-items: center;
   justify-content: space-between;
   font-size: 13px;
+}
+
+.layout .el-main {
+  padding: 0;
+}
+
+.layout .el-main .el-scrollbar .el-scrollbar__view {
+  padding: 20px;
 }
 </style>
