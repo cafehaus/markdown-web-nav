@@ -51,7 +51,7 @@
 
       <el-container>
         <el-header>
-          <span style="cursor: pointer;font-size: 15px;color: #999;" @click="handleNavigate('/')">🌍 用 Markdown 语法在文档类平台页面中制作网址导航</span>
+          <span style="cursor: pointer;font-size: 15px;font-weight: bold;color: #666;" @click="handleNavigate('/')">🌍 用 Markdown 语法在文档类平台页面中制作网址导航</span>
           <div style="display: flex;align-items: center;color: #999;">
             <span style="display: flex;align-items: center;margin-left:20px;">
               <el-icon><notebook /></el-icon>
@@ -158,12 +158,12 @@
   const Home = {
     template: `
       <div>
-        <el-button type="primary" plain @click="handleAppend(1)">新增导航分类</el-button>
-        <el-button type="warning" plain @click="showUploadDialog = true; this.jsonTextarea= ''">上传json网址数据</el-button>
-        <el-button type="info" text @click="downloadJsonTemplate">下载json示例模板</el-button>
+        <el-button type="primary" plain size="small" @click="handleAppend(1)">新增导航分类</el-button>
+        <el-button type="info" plain size="small" @click="showUploadDialog = true; this.jsonTextarea= ''">上传json网址数据</el-button>
+        <el-button type="info" plain size="small" @click="downloadJsonTemplate">下载json示例模板</el-button>
         <el-popover width="260" v-if="historyList.length">
           <template #reference>
-            <el-button type="info" text>修改历史</el-button>
+            <el-button type="info" plain size="small">修改历史</el-button>
           </template>
           <div style="max-height: 200px;overflow-y: auto;">
             <p
@@ -176,9 +176,9 @@
             </p>
           </div>
         </el-popover>
-        <el-button type="info" text @click="reset">重置成示例数据</el-button>
+        <el-button type="info" plain size="small" @click="reset">重置成示例数据</el-button>
 
-        <div style="margin: 20px 0;display: flex;">
+        <div style="margin: 10px 0 0;display: flex;">
           <div style="background: #FFF;padding: 20px;flex: 1;">
             <el-tree
               :data="treeData"
@@ -197,6 +197,7 @@
                     <el-icon
                       v-if="!node.isLeaf"
                       style="margin-left: 8px;color: var(--el-color-info-light-5)"
+                      title="复制"
                       @click="handleCopy(1, node, data)"
                     >
                       <copy-document/>
@@ -204,6 +205,7 @@
                     <el-icon
                       v-if="!node.isLeaf"
                       style="margin-left: 8px;color: var(--el-color-primary);"
+                      title="编辑"
                       @click="handleEdit(data)"
                     >
                       <edit-pen />
@@ -211,6 +213,7 @@
                     <el-icon
                       v-if="!node.isLeaf"
                       style="margin-left: 8px;color: var(--el-color-primary)"
+                      title="新增"
                       @click="handleAppend(3, data)"
                     >
                       <circle-plus/> 
@@ -240,7 +243,9 @@
                       @confirm="remove(node, data)"
                     >
                       <template #reference>
-                        <el-icon style="margin-left: 8px;color: var(--el-color-danger)"><remove /></el-icon>
+                        <el-icon style="margin-left: 8px;color: var(--el-color-danger)">
+                          <remove />
+                        </el-icon>
                       </template>
                     </el-popconfirm>
                   </span>
@@ -254,9 +259,33 @@
               <div style="display: flex;justify-content: space-between;">
                 <span>预览效果</span>
                 <div>
-                  <el-button type="success" :disabled="!treeData || !treeData.length" @click="copyMarkdown">复制markdown数据</el-button>
-                  <el-button type="success" plain :disabled="!treeData || !treeData.length" @click="exportMarkdown">导出markdown</el-button>
-                  <el-button type="warning" plain :disabled="!treeData || !treeData.length" @click="exportJson">导出json</el-button>
+                  <el-button
+                    type="success"
+                    :disabled="!treeData || !treeData.length"
+                    plain
+                    size="small"
+                    @click="copyMarkdown"
+                  >
+                    复制markdown数据
+                  </el-button>
+                  <el-button
+                    type="info"
+                    plain
+                    :disabled="!treeData || !treeData.length"
+                    size="small"
+                    @click="exportMarkdown"
+                  >
+                    导出markdown
+                  </el-button>
+                  <el-button
+                    type="info"
+                    plain
+                    :disabled="!treeData || !treeData.length"
+                    size="small"
+                    @click="exportJson"
+                  >
+                    导出json
+                  </el-button>
                 </div>
               </div>
             </template>
