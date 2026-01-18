@@ -8,6 +8,7 @@
 * 一键自动复制最终的markdown数据
 * 导出页面数据到markdown文件、json文件
 * 可记录最近的历史修改记录，方便回滚修改
+* 支持命令行工具，直接通过JSON文件生成Markdown导航
 
 ### 使用 markdown-web-nav 工具制作网址导航页面步骤
 
@@ -68,7 +69,7 @@
 
 为了更加有辨识度和美观建议网站图标地址也填写上，如果不填写默认会用网站名称的第一个字符生成一个默认的圆形文字图标，对于不知道怎么获取网站对应图标的可以参考后面的常见问题章节。
 
-进入网页后默认有几个示例数据，可以直接在示例的基础上修改、新增。点击分类和网站数据后面的编辑图标可以编辑详细信息，点击减号图标可以删除当前元素，点击分加号图标可以新增当前分类下的网站信息。
+进入网页后默认有几个示例数据，可以直接在示例的基础上修改、新增。点击分类和网站数据前面的复制图标可以快速复制当前项，点击编辑图标可以编辑详细信息，点击减号图标可以删除当前元素，点击加号图标可以新增当前分类下的网站信息。
 
 <img src="./static/5.png" />
 
@@ -111,3 +112,141 @@
 
 #### 3、如何反馈问题？
 有任何使用问题或建议可以在 github 对应仓库提 [issue](https://github.com/cafehaus/markdown-web-nav/issues)
+
+---
+
+## 命令行工具使用
+
+markdown-web-nav 还提供了命令行工具，可以直接通过JSON文件生成Markdown导航，适合喜欢使用命令行的开发者。
+
+### 安装
+
+1. 克隆仓库：
+```bash
+git clone https://github.com/cafehaus/markdown-web-nav.git
+cd markdown-web-nav
+```
+
+2. 安装依赖：
+```bash
+npm install
+```
+
+3. 全局安装（可选）：
+```bash
+npm install -g .
+```
+
+### 使用方法
+
+#### 1. 生成示例JSON文件
+
+```bash
+markdown-web-nav sample
+```
+
+或者
+```bash
+node bin/cli.js sample
+```
+
+这将在当前目录生成一个 `sample.json` 文件，包含示例数据。
+
+#### 2. 根据JSON文件生成Markdown导航
+
+```bash
+markdown-web-nav generate <input.json>
+```
+
+或者
+```bash
+node bin/cli.js generate <input.json>
+```
+
+##### 参数说明
+
+- `<input.json>`: 输入的JSON文件路径（必需）
+- `-o, --output <path>`: 输出的Markdown文件路径（可选，默认为 `web-nav.md`）
+
+##### 示例
+
+```bash
+# 使用示例JSON文件生成Markdown导航
+markdown-web-nav generate sample.json
+
+# 指定输出文件路径
+markdown-web-nav generate sample.json -o my-nav.md
+```
+
+### JSON文件格式
+
+JSON文件支持两种格式：
+
+#### 格式1：包含root属性的对象格式
+
+```json
+{
+  "root": [
+    {
+      "title": "分类标题",
+      "children": [
+        {
+          "name": "网站名称",
+          "url": "https://example.com",
+          "description": "网站描述",
+          "icon": "https://example.com/icon.png"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### 格式2：直接数组格式
+
+```json
+[
+  {
+    "title": "分类标题",
+    "children": [
+      {
+        "name": "网站名称",
+        "url": "https://example.com",
+        "description": "网站描述",
+        "icon": "https://example.com/icon.png"
+      }
+    ]
+  }
+]
+```
+
+### 字段说明
+
+- `title`: 分类标题（必需）
+- `children`: 分类下的网站列表（可选）
+- `name`: 网站名称（必需）
+- `url`: 网站地址（必需）
+- `description`: 网站描述（可选）
+- `icon`: 网站图标地址（可选）
+
+### 命令行使用示例
+
+1. 生成示例JSON文件：
+```bash
+markdown-web-nav sample
+```
+
+2. 编辑生成的 `sample.json` 文件，添加自己的网站数据
+
+3. 生成Markdown导航：
+```bash
+markdown-web-nav generate sample.json -o my-navigation.md
+```
+
+4. 将生成的 `my-navigation.md` 文件内容复制到支持Markdown渲染的平台中
+
+### 注意事项
+
+- 网站图标建议使用正方形图片，尺寸建议为36x36像素
+- 如果不提供网站图标，系统会自动生成一个带有网站名称首字母的彩色圆形图标
+- 生成的Markdown文件可以直接在支持Markdown渲染的平台中使用

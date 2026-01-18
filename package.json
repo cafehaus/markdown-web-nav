@@ -1,8 +1,11 @@
 {
   "name": "markdown-web-nav",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "用markdwon语法制作一个好看的网址导航页面",
   "main": "index.js",
+  "bin": {
+    "markdown-web-nav": "./bin/cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,7 +16,8 @@
   "keywords": [
     "markdown",
     "web",
-    "navigation"
+    "navigation",
+    "cli"
   ],
   "author": "cafehaus",
   "email": "510878689@qq.com",
@@ -21,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/cafehaus/markdown-web-nav/issues"
   },
-  "homepage": "https://github.com/cafehaus/markdown-web-nav#readme"
+  "homepage": "https://github.com/cafehaus/markdown-web-nav#readme",
+  "dependencies": {
+    "commander": "^9.4.1"
+  }
 }
